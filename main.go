@@ -12,6 +12,7 @@ import (
 )
 
 type TitleScreen struct {
+	Title   string
 	options []Option
 	cursor  int
 }
@@ -60,7 +61,8 @@ func playAudio() tea.Cmd {
 
 func InitializeTitleScreen() TitleScreen {
 	tp := TitleScreen{}
-	tp.options = []Option{&Game{Name: "Contra", CrossedOut: false}, &Game{Name: "The Legend of Zelda", CrossedOut: false, Model: TitleScreen{cursor: 0, options: []Option{&Button{Name: "Push Me", Color: "red"}}}}, &Game{Name: "Metroid", CrossedOut: false}}
+	tp.Title = "Pick your game!"
+	tp.options = []Option{&Game{Name: "Snake", CrossedOut: false}, &Game{Name: "Pong", CrossedOut: false, Model: TitleScreen{Title: "Pong", cursor: 0, options: []Option{&Button{Name: "Push Me", Color: "red"}}}}, &Game{Name: "Asteroids", CrossedOut: false}}
 	tp.cursor = 0
 	return tp
 }
@@ -100,7 +102,11 @@ func (t TitleScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (t TitleScreen) View() string {
-	s := "Select your game!\n"
+	var s string
+	if t.Title != "" {
+		s = t.Title + "\n"
+	}
+
 	for i, o := range t.options {
 		var namestr string
 		if o.getCrossedOut() {
