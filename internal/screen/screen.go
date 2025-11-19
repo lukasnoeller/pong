@@ -5,6 +5,7 @@ import (
 
 	"bubbletea/internal/audio"
 	"bubbletea/internal/option"
+	"bubbletea/internal/pong"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -18,7 +19,7 @@ type Screen struct {
 func InitializeTitleScreen() Screen {
 	tp := Screen{}
 	tp.Title = "Pick your game!"
-	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: Screen{options: []option.Option{}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
+	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: pong.Pong{}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
 	tp.cursor = 0
 	return tp
 }

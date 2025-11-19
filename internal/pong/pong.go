@@ -1,60 +1,67 @@
+package pong
+
+import (
+	"fmt"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
+
 type Pong struct {
 	width              int
 	height             int
 	ball_coordinates   [2]int
 	paddle_coordinates int
+	state              state
 }
+type state int
+
+const (
+	initializing state = iota
+	ready
+)
 
 func (p Pong) Init() tea.Cmd {
 	return nil
 }
 func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	//var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		p.width = msg.Width
+		p.height = msg.Height
+		p.state = ready
+		return p, nil
 	case tea.KeyMsg:
-		cmd = audio.PlayAudio()
+		//cmd = audio.PlayAudio()
 		switch msg.Type {
 		case tea.KeyDown:
-			t.cursor = (t.cursor + 1) % len(t.options)
+
 		case tea.KeyUp:
-			t.cursor = (t.cursor + len(t.options) - 1) % len(t.options)
+
 		case tea.KeyEnter:
-			if t.options[t.cursor].Model != nil {
-				return t.options[t.cursor].Model, cmd
-			}
-			if t.options[t.cursor].Name == "Quit" {
-				return t, tea.Quit
-			}
 
 		case tea.KeyRunes:
 			switch string(msg.Runes) {
 			case "ctrl+c", "q", "esc":
-				return t, tea.Quit
+				return p, tea.Quit
 			}
 
 		}
 	}
 
-	return t, cmd
+	return p, nil
 }
 
-func (t Screen) View() string {
-	var s string
-	if t.Title != "" {
-		s = t.Title + "\n"
+const (
+	paddle_top   string = " _____"
+	paddle_botom string = "|_____|"
+)
+
+func (p Pong) View() string {
+	if p.state == initializing {
+		return paddle_top + "\n" + paddle_botom
 	}
 
-	for i, o := range t.options {
-		var namestr string
-
-		namestr = o.Name
-
-		if i == t.cursor {
-			s = s + fmt.Sprintf("\n--> %s", namestr)
-		} else {
-			s = s + fmt.Sprintf("\n    %s", namestr)
-		}
-
-	}
+	s := fmt.Sprintf("Width: %v \t Height: %v\n", p.width, p.height)
 	return s
 }
