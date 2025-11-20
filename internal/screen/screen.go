@@ -6,6 +6,7 @@ import (
 	"bubbletea/internal/audio"
 	"bubbletea/internal/option"
 	"bubbletea/internal/pong"
+	"bubbletea/internal/resizer"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -14,65 +15,81 @@ type Screen struct {
 	Title   string
 	options []option.Option
 	cursor  int
+	Width   int
+	Height  int
 }
 
+func (s Screen) GetWindowDimensions() (int, int) {
+	return s.Width, s.Height
+}
+func (s *Screen) SetWindowDimensions(w int, h int) {
+	s.Width = w
+	s.Height = h
+}
 func InitializeTitleScreen() Screen {
 	tp := Screen{}
 	tp.Title = "Pick your game!"
-	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: pong.Pong{}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
+	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: &Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: &pong.Pong{}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
 	tp.cursor = 0
 	return tp
 }
-func (t Screen) Init() tea.Cmd {
+func (s Screen) Init() tea.Cmd {
 	return nil
 }
-func (t Screen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s Screen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		s.Width = msg.Width
+		s.Height = msg.Height
 	case tea.KeyMsg:
 		cmd = audio.PlayAudio()
 		switch msg.Type {
 		case tea.KeyDown:
-			t.cursor = (t.cursor + 1) % len(t.options)
+			s.cursor = (s.cursor + 1) % len(s.options)
 		case tea.KeyUp:
-			t.cursor = (t.cursor + len(t.options) - 1) % len(t.options)
+			s.cursor = (s.cursor + len(s.options) - 1) % len(s.options)
 		case tea.KeyEnter:
-			if t.options[t.cursor].Model != nil {
-				return t.options[t.cursor].Model, cmd
+			if s.options[s.cursor].Model != nil {
+				if m, ok := s.options[s.cursor].Model.(resizer.Resizer); ok {
+					m.SetWindowDimensions(s.Width, s.Height)
+					return m, cmd
+				}
+				return s.options[s.cursor].Model, cmd
 			}
-			if t.options[t.cursor].Name == "Quit" {
-				return t, tea.Quit
+			if s.options[s.cursor].Name == "Quit" {
+				return s, tea.Quit
 			}
 
 		case tea.KeyRunes:
 			switch string(msg.Runes) {
 			case "ctrl+c", "q", "esc":
-				return t, tea.Quit
+				return s, tea.Quit
 			}
 
 		}
 	}
 
-	return t, cmd
+	return s, cmd
 }
 
-func (t Screen) View() string {
-	var s string
-	if t.Title != "" {
-		s = t.Title + "\n"
+func (s Screen) View() string {
+	var str string
+	if s.Title != "" {
+		str = s.Title + "\n"
 	}
 
-	for i, o := range t.options {
+	for i, o := range s.options {
 		var namestr string
 
 		namestr = o.Name
 
-		if i == t.cursor {
-			s = s + fmt.Sprintf("\n--> %s", namestr)
+		if i == s.cursor {
+			str = str + fmt.Sprintf("\n--> %s", namestr)
 		} else {
-			s = s + fmt.Sprintf("\n    %s", namestr)
+			str = str + fmt.Sprintf("\n    %s", namestr)
 		}
 
 	}
-	return s
+	return str
 }

@@ -1,17 +1,18 @@
 package pong
 
 import (
+	"bubbletea/internal/resizer"
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Pong struct {
-	width              int
-	height             int
-	ball_coordinates   [2]int
-	paddle_coordinates int
-	state              state
+	Width              int
+	Height             int
+	Ball_coordinates   [2]int
+	Paddle_coordinates int
+	State              state
 }
 type state int
 
@@ -20,6 +21,15 @@ const (
 	ready
 )
 
+var _ resizer.Resizer = (*Pong)(nil)
+
+func (p Pong) GetWindowDimensions() (int, int) {
+	return p.Width, p.Height
+}
+func (p *Pong) SetWindowDimensions(w int, h int) {
+	p.Width = w
+	p.Height = h
+}
 func (p Pong) Init() tea.Cmd {
 	return nil
 }
@@ -27,9 +37,9 @@ func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	//var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		p.width = msg.Width
-		p.height = msg.Height
-		p.state = ready
+		p.Width = msg.Width
+		p.Height = msg.Height
+		p.State = ready
 		return p, nil
 	case tea.KeyMsg:
 		//cmd = audio.PlayAudio()
@@ -53,15 +63,15 @@ func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 const (
-	paddle_top   string = " _____"
-	paddle_botom string = "|_____|"
+	paddle_top    string = " _____"
+	paddle_bottom string = "|_____|"
 )
 
 func (p Pong) View() string {
-	if p.state == initializing {
-		return paddle_top + "\n" + paddle_botom
+	if p.State == initializing {
+		return paddle_top + "\n" + paddle_bottom + "\n" + fmt.Sprintf("Width: %v Height: %v\n", p.Width, p.Height)
 	}
 
-	s := fmt.Sprintf("Width: %v \t Height: %v\n", p.width, p.height)
+	s := fmt.Sprintf("Width: %v \t Height: %v\n", p.Width, p.Height)
 	return s
 }
