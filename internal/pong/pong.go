@@ -12,11 +12,15 @@ type Pong struct {
 	Width             int
 	Height            int
 	BallCoordinates   [2]int
+	BallVelx int
+	BallVely int
 	PaddleCoordinates int
 	State             state
 	PaddleTop         string
 	PaddleBottom      string
 	Ball              string
+	GameStart         bool
+	InitCalls int
 }
 type state int
 
@@ -35,19 +39,23 @@ func (p *Pong) SetWindowDimensions(w int, h int) {
 	p.Width = w
 	p.Height = h
 }
-func (p Pong) Init() tea.Cmd {
-	return nil
+func (p *Pong) Init() tea.Cmd {
+	p.InitCalls++
+	p.BallVely = 1
+	p.BallVelx = 0
+	return Tick
 }
-func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	//var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		p.Width = msg.Width
 		p.Height = msg.Height
 		p.PaddleCoordinates = p.Width / 2
-		return p, Tick
+		return p, nil
 	case GravityTick:
-		p.BallCoordinates[1]++
+		p.BallCoordinates[1]+= p.BallVely
+		p.BallCoordinates[0]+= p.BallVelx
 		if p.BallCoordinates[1] > p.Height {
 			p.BallCoordinates[1] = 0
 		}
@@ -67,10 +75,7 @@ func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				p.PaddleCoordinates = p.Width - len(p.PaddleBottom)
 			}
 			return p, nil
-		case tea.KeyDown:
-
-		case tea.KeyUp:
-
+		case tea.KeyDown: case tea.KeyUp:
 		case tea.KeyEnter:
 
 		case tea.KeyRunes:
@@ -85,13 +90,14 @@ func (p Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return p, nil
 }
 
-func (p Pong) View() string {
+func (p *Pong) View() string {
 	s := p.drawBoard()
 	s += p.drawPaddle()
 	s += fmt.Sprintf("Width: %v Height: %v\n", p.Width, p.Height) + fmt.Sprintf("PaddleCoordinates: %v\t BallCoordinates: %v\n", p.PaddleCoordinates, p.BallCoordinates)
+	s += fmt.Sprintf("Init called %d times\n", p.InitCalls)
 	return s
 	// s := fmt.Sprintf("Width: %v \t Height: %v\n", p.Width, p.Height)
-	// return s
+	
 }
 
 func (p Pong) drawPaddle() string {

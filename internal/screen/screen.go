@@ -29,7 +29,7 @@ func (s *Screen) SetWindowDimensions(w int, h int) {
 func InitializeTitleScreen() Screen {
 	tp := Screen{}
 	tp.Title = "Pick your game!"
-	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: &Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: &pong.Pong{PaddleTop: pong.PADDLE_TOP, PaddleBottom: pong.PADDLE_BOTTOM, Ball: pong.BALL, BallCoordinates: [2]int{35, 2}}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
+	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: &Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: &pong.Pong{PaddleTop: pong.PADDLE_TOP, PaddleBottom: pong.PADDLE_BOTTOM, Ball: pong.BALL, BallCoordinates: [2]int{35, 2}, GameStart: true}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
 	tp.cursor = 0
 	return tp
 }
@@ -53,7 +53,7 @@ func (s Screen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.options[s.cursor].Model != nil {
 				if m, ok := s.options[s.cursor].Model.(resizer.Resizer); ok {
 					m.SetWindowDimensions(s.Width, s.Height)
-					return m, cmd
+					return m, tea.Batch(m.Init(),cmd)
 				}
 				return s.options[s.cursor].Model, cmd
 			}
