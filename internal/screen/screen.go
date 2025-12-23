@@ -3,10 +3,10 @@ package screen
 import (
 	"fmt"
 
-	"bubbletea/internal/audio"
-	"bubbletea/internal/option"
-	"bubbletea/internal/pong"
-	"bubbletea/internal/resizer"
+	"pong/internal/audio"
+	"pong/internal/option"
+	"pong/internal/pong"
+	"pong/internal/resizer"
 
 	tea "github.com/charmbracelet/bubbletea"
 )

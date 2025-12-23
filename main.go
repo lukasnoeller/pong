@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"bubbletea/internal/screen"
+	"pong/internal/screen"
 
 	tea "github.com/charmbracelet/bubbletea"
 	_ "github.com/hajimehoshi/go-mp3"

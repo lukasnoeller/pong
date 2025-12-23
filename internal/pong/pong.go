@@ -1,7 +1,7 @@
 package pong
 
 import (
-	"bubbletea/internal/resizer"
+	"pong/internal/resizer"
 	"fmt"
 	"time"
 	"strings"
