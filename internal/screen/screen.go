@@ -26,10 +26,8 @@ func (s *Screen) SetWindowDimensions(w int, h int) {
 	s.Width = w
 	s.Height = h
 }
-func InitializeTitleScreen() Screen {
-	tp := Screen{}
-	tp.Title = "Pick your game!"
-	tp.options = []option.Option{{Name: "Snake"}, {Name: "Pong", Model: &Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: &pong.Pong{PaddleTop: pong.PADDLE_TOP, PaddleBottom: pong.PADDLE_BOTTOM, Ball: pong.BALL, BallCoordinates: [2]int{35, 2}, GameStart: true}}, {Name: "Two Players"}, {Name: "Quit"}}}}, {Name: "Asteroids"}}
+func InitializeTitleScreen() *Screen {
+	tp := &Screen{Title: "Pong", cursor: 0, options: []option.Option{{Name: "One Player", Model: &pong.Pong{PaddleTop: pong.PADDLE_TOP, PaddleBottom: pong.PADDLE_BOTTOM, Ball: pong.BALL, BallCoordinates: [2]int{35, 2}, GameStart: true}}, {Name: "Two Players"}, {Name: "Quit"}}}
 	tp.cursor = 0
 	return tp
 }
