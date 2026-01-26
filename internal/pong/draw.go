@@ -1,13 +1,17 @@
 package pong
 
+func (p Pong) drawPaddle(grid [][]string) [][]string {
+	for j := p.PaddleCoordinates[1]; j < p.PaddleCoordinates[1]+p.PaddleHeight; j++ {
 
-func (p Pong) drawPaddle() string {
-	var s string
-	for _ = range p.PaddleCoordinates {
-		s += " "
+		for i := p.PaddleCoordinates[0]; i < p.PaddleCoordinates[0]+p.PaddleWidth; i++ {
+			if i == p.PaddleCoordinates[0] || i == p.PaddleCoordinates[0]+p.PaddleWidth-1 {
+				grid[j][i] = "|"
+			} else {
+				grid[j][i] = "-"
+			}
+		}
 	}
-	s += PADDLE_TOP + "\n" + s + PADDLE_BOTTOM + "\n"
-	return s
+	return grid
 }
 func (p Pong) drawBoard() string {
 	var s string
@@ -37,4 +41,3 @@ func (p Pong) CenterString(str string) string {
 	}
 	return s
 }
-

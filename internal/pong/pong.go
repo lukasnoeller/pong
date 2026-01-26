@@ -1,10 +1,11 @@
 package pong
 
 import (
-	"pong/internal/resizer"
 	"fmt"
-	"time"
 	"strings"
+	"time"
+
+	"pong/internal/resizer"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -13,15 +14,15 @@ type Pong struct {
 	Width             int
 	Height            int
 	BallCoordinates   [2]int
-	BallVelx int
-	BallVely int
-	PaddleCoordinates int
+	BallVelx          int
+	BallVely          int
+	PaddleCoordinates [2]int
 	State             state
-	PaddleTop         string
-	PaddleBottom      string
+	PaddleWidth       int
+	PaddleHeight      int
 	Ball              string
 	GameStart         bool
-	DisplayInfo bool
+	DisplayInfo       bool
 }
 type state int
 
@@ -29,6 +30,7 @@ const (
 	PADDLE_TOP    string = " _____"
 	PADDLE_BOTTOM string = "|_____|"
 	BALL          string = "•"
+	MARGIN_WIDTH         = 3
 )
 
 var _ resizer.Resizer = (*Pong)(nil)
@@ -43,6 +45,9 @@ func (p *Pong) SetWindowDimensions(w int, h int) {
 func (p *Pong) Init() tea.Cmd {
 	p.BallVely = 1
 	p.BallVelx = 0
+	p.PaddleCoordinates[1] = p.Height - MARGIN_WIDTH
+	p.PaddleHeight = 2
+	p.PaddleWidth = 5
 	return Tick
 }
 func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -51,44 +56,42 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		p.Width = msg.Width
 		p.Height = msg.Height
-		p.PaddleCoordinates = p.Width / 2
+		p.PaddleCoordinates[0] = p.Width / 2
+		p.PaddleCoordinates[1] = 8
+
 		return p, nil
 	case GravityTick:
-		p.BallCoordinates[1]+= p.BallVely
-		p.BallCoordinates[0]+= p.BallVelx
-		if p.BallCoordinates[0] >= p.PaddleCoordinates && p.BallCoordinates[0] <= p.PaddleCoordinates + len(p.PaddleBottom) && p.BallCoordinates[1] > p.Height - 7 || p.BallCoordinates[1] < 0 && p.BallVely <0 {
+		p.BallCoordinates[1] += p.BallVely
+		p.BallCoordinates[0] += p.BallVelx
+		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.Height-2 || p.BallCoordinates[1] < 0 && p.BallVely < 0 {
 			p.BallVely = -p.BallVely
-			p.BallCoordinates[1]+= p.BallVely
+			p.BallCoordinates[1] += p.BallVely
 		}
 
 		return p, Tick
 	case tea.KeyMsg:
 		//cmd = audio.PlayAudio()
-		switch msg.Type {
-		case tea.KeyLeft:
-			p.PaddleCoordinates--
-			if p.PaddleCoordinates < 0 {
-				p.PaddleCoordinates = 0
+		switch msg.String() {
+		case "left", "h":
+			p.PaddleCoordinates[0]--
+			if p.PaddleCoordinates[0] < 0 {
+				p.PaddleCoordinates[0] = 0
 			}
 			return p, nil
-		case tea.KeyRight:
-			p.PaddleCoordinates++
-			if p.PaddleCoordinates+len(p.PaddleBottom) > p.Width {
-				p.PaddleCoordinates = p.Width - len(p.PaddleBottom)
+		case "right", "k":
+			p.PaddleCoordinates[0]++
+			if p.PaddleCoordinates[0]+p.PaddleWidth > p.Width {
+				p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
 			}
 			return p, nil
-		case tea.KeyDown: case tea.KeyUp:
-		case tea.KeyEnter:
 
-		case tea.KeyRunes:
-			switch string(msg.Runes) {
-			case "ctrl+c", "q", "esc":
-				return p, tea.Quit
-			
-			case "i", "I":
-				p.DisplayInfo = !p.DisplayInfo	
-				return p, nil
-			}
+		case "ctrl+c", "q", "esc":
+			return p, tea.Quit
+
+		case "i", "I":
+			p.DisplayInfo = !p.DisplayInfo
+			return p, nil
+
 		}
 	}
 
@@ -97,17 +100,34 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (p *Pong) View() string {
 	s := p.drawBoard()
-	s += p.drawPaddle()
+	grid := make([][]string, p.Height)
+	for j, _ := range grid {
+		row := make([]string, p.Width)
+		for i, _ := range row {
+
+			row[i] = "O"
+		}
+		grid[j] = row
+	}
+	grid[12][14] = "X"
+	grid = p.drawPaddle(grid)
+	grid[3][3] = "3"
+	grid[1][1] = fmt.Sprintf("RealY:%v", p.PaddleCoordinates[1])
+	var output strings.Builder
+	for _, row := range grid {
+		output.WriteString(strings.Join(row, "") + "\n")
+	}
+	//	s += p.drawPaddle()
 	if p.DisplayInfo {
-		
-		s += fmt.Sprintf("Width: %v Height: %v\n", p.Width, p.Height) + fmt.Sprintf("PaddleCoordinates: %v\t BallCoordinates: %v BallVely: %v Num lines: %v\n", p.PaddleCoordinates, p.BallCoordinates, p.BallVely, strings.Count(s, "\n"))
 
+		s += fmt.Sprintf("Width: %v Height: %v\n", p.Width, p.Height) + fmt.Sprintf("PaddleCoordinates: %v\t BallCoordinates: %v BallVely: %v Num lines: %v\n", p.PaddleCoordinates[0], p.BallCoordinates, p.BallVely, strings.Count(s, "\n"))
 
-}
-	return s
+	}
+	return output.String()
 	// s := fmt.Sprintf("Width: %v \t Height: %v\n", p.Width, p.Height)
-	
+
 }
+
 type GravityTick struct{}
 
 func Tick() tea.Msg {
