@@ -47,7 +47,7 @@ func (p *Pong) Init() tea.Cmd {
 	p.BallVelx = 0
 	p.PaddleCoordinates[1] = p.Height - MARGIN_WIDTH
 	p.PaddleHeight = 2
-	p.PaddleWidth = 5
+	p.PaddleWidth = 9
 	return Tick
 }
 func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -63,7 +63,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case GravityTick:
 		p.BallCoordinates[1] += p.BallVely
 		p.BallCoordinates[0] += p.BallVelx
-		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.Height-2 || p.BallCoordinates[1] < 0 && p.BallVely < 0 {
+		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < 0 && p.BallVely < 0 {
 			p.BallVely = -p.BallVely
 			p.BallCoordinates[1] += p.BallVely
 		}
@@ -105,13 +105,12 @@ func (p *Pong) View() string {
 		row := make([]string, p.Width)
 		for i, _ := range row {
 
-			row[i] = "O"
+			row[i] = " "
 		}
 		grid[j] = row
 	}
-	grid[12][14] = "X"
 	grid = p.drawPaddle(grid)
-	grid[3][3] = "3"
+	grid = p.drawBall(grid)
 	grid[1][1] = fmt.Sprintf("RealY:%v", p.PaddleCoordinates[1])
 	var output strings.Builder
 	for _, row := range grid {
