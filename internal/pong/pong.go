@@ -94,7 +94,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				p.PaddleCoordinates[0] = 0
 			}
 			return p, nil
-		case "right", "k":
+		case "right", "l":
 			p.PaddleCoordinates[0]++
 			p.PaddleVel++
 			if p.PaddleCoordinates[0]+p.PaddleWidth > p.Width {
