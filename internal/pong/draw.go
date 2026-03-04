@@ -51,22 +51,29 @@ func (p Pong) drawBall(grid [][]string) [][]string {
 	grid[p.BallCoordinates[1]][p.BallCoordinates[0]] = "X"
 	return grid
 }
-func (p Pong) drawBoard() string {
-	var s string
-	s = "\n" + p.CenterString("P O N G") + "\n"
-	for j := range p.Height - 7 {
-		if j == p.BallCoordinates[1] {
-			for i := range p.Width {
-				if i == p.BallCoordinates[0] {
-					s += p.Ball
-				} else {
-					s += " "
-				}
-			}
+func (p Pong) drawInfo(grid [][]string) [][]string {
+	for j := 0; j < p.Border; j++ {
+		for i := 0; i < p.Width; i++ {
+			grid[j][i] = "*"
+			grid[j+(p.Height-p.Border)][i] = "*"
 		}
-		s += "\n"
 	}
-	return s
+	for j := p.Border; j < p.Height-p.Border; j++ {
+		for i := 0; i < p.Border; i++ {
+			grid[j][i] = "*"
+			grid[j][i+(p.Width-p.Border)] = "*"
+		}
+	}
+	return grid
+}
+
+func (p Pong) drawBoard(grid [][]string) [][]string {
+	grid = p.drawPaddle(grid)
+	grid = p.drawBall(grid)
+	if p.DisplayInfo {
+		grid = p.drawInfo(grid)
+	}
+	return grid
 }
 func (p Pong) CenterString(str string) string {
 	var s string

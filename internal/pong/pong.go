@@ -1,7 +1,6 @@
 package pong
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -13,6 +12,7 @@ import (
 type Pong struct {
 	Width             int
 	Height            int
+	Border            int
 	BallCoordinates   [2]int
 	BallVelx          int
 	BallVely          int
@@ -30,7 +30,6 @@ const (
 	PADDLE_TOP    string = " _____"
 	PADDLE_BOTTOM string = "|_____|"
 	BALL          string = "•"
-	MARGIN_WIDTH         = 3
 )
 
 var _ resizer.Resizer = (*Pong)(nil)
@@ -45,7 +44,8 @@ func (p *Pong) SetWindowDimensions(w int, h int) {
 func (p *Pong) Init() tea.Cmd {
 	p.BallVely = 1
 	p.BallVelx = 0
-	p.PaddleCoordinates[1] = p.Height - MARGIN_WIDTH
+	p.Border = 3
+	p.PaddleCoordinates[1] = p.Height - p.Border - 2
 	p.PaddleHeight = 2
 	p.PaddleWidth = 9
 	return Tick
@@ -56,16 +56,19 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		p.Width = msg.Width
 		p.Height = msg.Height
-		p.PaddleCoordinates[0] = p.Width / 2
-		p.PaddleCoordinates[1] = 8
+		p.PaddleCoordinates[0] = (p.Width - (2 * p.Border)) / 2
+		p.PaddleCoordinates[1] = p.Height - p.Border - 2
 
 		return p, nil
 	case GravityTick:
 		p.BallCoordinates[1] += p.BallVely
 		p.BallCoordinates[0] += p.BallVelx
-		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < 0 && p.BallVely < 0 {
+		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < p.Border && p.BallVely < 0 {
 			p.BallVely = -p.BallVely
 			p.BallCoordinates[1] += p.BallVely
+		}
+		if p.BallCoordinates[1] > p.Height-p.Border {
+			p.BallCoordinates[1] += p.Border + 1
 		}
 
 		return p, Tick
@@ -99,7 +102,6 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (p *Pong) View() string {
-	s := p.drawBoard()
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
 		row := make([]string, p.Width)
@@ -109,27 +111,21 @@ func (p *Pong) View() string {
 		}
 		grid[j] = row
 	}
-	grid = p.drawPaddle(grid)
-	grid = p.drawBall(grid)
-	grid[1][1] = fmt.Sprintf("RealY:%v", p.PaddleCoordinates[1])
+	// grid = p.drawPaddle(grid)
+	// grid = p.drawBall(grid)
+	grid = p.drawBoard(grid)
 	var output strings.Builder
 	for _, row := range grid {
 		output.WriteString(strings.Join(row, "") + "\n")
 	}
-	//	s += p.drawPaddle()
-	if p.DisplayInfo {
 
-		s += fmt.Sprintf("Width: %v Height: %v\n", p.Width, p.Height) + fmt.Sprintf("PaddleCoordinates: %v\t BallCoordinates: %v BallVely: %v Num lines: %v\n", p.PaddleCoordinates[0], p.BallCoordinates, p.BallVely, strings.Count(s, "\n"))
-
-	}
 	return output.String()
-	// s := fmt.Sprintf("Width: %v \t Height: %v\n", p.Width, p.Height)
 
 }
 
 type GravityTick struct{}
 
 func Tick() tea.Msg {
-	time.Sleep(time.Millisecond * 200)
+	time.Sleep(time.Millisecond * 100)
 	return GravityTick{}
 }
