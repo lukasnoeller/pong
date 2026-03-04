@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-
 	"pong/internal/screen"
 
 	tea "github.com/charmbracelet/bubbletea"
