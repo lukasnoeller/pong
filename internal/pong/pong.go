@@ -20,9 +20,11 @@ type Pong struct {
 	State             state
 	PaddleWidth       int
 	PaddleHeight      int
+	PaddleVel         int
 	Ball              string
 	GameStart         bool
 	DisplayInfo       bool
+	Grid              [][]string
 }
 type state int
 
@@ -48,6 +50,16 @@ func (p *Pong) Init() tea.Cmd {
 	p.PaddleCoordinates[1] = p.Height - p.Border - 2
 	p.PaddleHeight = 2
 	p.PaddleWidth = 9
+	grid := make([][]string, p.Height)
+	for j, _ := range grid {
+		row := make([]string, p.Width)
+		for i, _ := range row {
+
+			row[i] = " "
+		}
+		grid[j] = row
+	}
+	p.Grid = grid
 	return Tick
 }
 func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -68,7 +80,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.BallCoordinates[1] += p.BallVely
 		}
 		if p.BallCoordinates[1] > p.Height-p.Border {
-			p.BallCoordinates[1] += p.Border + 1
+			p.BallCoordinates[1] = 0
 		}
 
 		return p, Tick
@@ -77,12 +89,14 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "left", "h":
 			p.PaddleCoordinates[0]--
+			p.PaddleVel--
 			if p.PaddleCoordinates[0] < 0 {
 				p.PaddleCoordinates[0] = 0
 			}
 			return p, nil
 		case "right", "k":
 			p.PaddleCoordinates[0]++
+			p.PaddleVel++
 			if p.PaddleCoordinates[0]+p.PaddleWidth > p.Width {
 				p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
 			}
@@ -111,11 +125,10 @@ func (p *Pong) View() string {
 		}
 		grid[j] = row
 	}
-	// grid = p.drawPaddle(grid)
-	// grid = p.drawBall(grid)
-	grid = p.drawBoard(grid)
+	p.Grid = grid
+	p.drawBoard()
 	var output strings.Builder
-	for _, row := range grid {
+	for _, row := range p.Grid {
 		output.WriteString(strings.Join(row, "") + "\n")
 	}
 
