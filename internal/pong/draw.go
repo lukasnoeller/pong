@@ -1,5 +1,11 @@
 package pong
 
+import (
+	"errors"
+	"fmt"
+	"log"
+)
+
 func (p *Pong) drawTopHalf(j int) {
 
 	for i := p.PaddleCoordinates[0]; i < p.PaddleCoordinates[0]+p.PaddleWidth; i++ {
@@ -46,11 +52,27 @@ func (p *Pong) drawPaddle() {
 func (p *Pong) drawBall() {
 	p.Grid[p.BallCoordinates[1]][p.BallCoordinates[0]] = "X"
 }
+func (p *Pong) Write2Row(r int, info string, value any) error {
+	if r >= len(p.Grid) || r < 0 {
+		return errors.New("invalid row number provided")
+	}
+	writeString := fmt.Sprintf("%s: %v", info, value)
+	for i := 0; i < len(writeString); i++ {
+		if i >= len(p.Grid[r]) {
+			return errors.New("exceeded window width")
+		}
+		p.Grid[r][i] = string(writeString[i])
+	}
+	return nil
+}
 func (p *Pong) drawInfo() {
+	if err := p.Write2Row(p.Height-p.Border, "PaddleVel", p.PaddleVel); err != nil {
+		log.Printf("error during Write2Row: %v\n", err.Error())
+	}
 	for j := 0; j < p.Border; j++ {
 		for i := 0; i < p.Width; i++ {
 			p.Grid[j][i] = "*"
-			p.Grid[j+(p.Height-p.Border)][i] = "*"
+			//p.Grid[j+(p.Height-p.Border)][i] = "*"
 		}
 	}
 	for j := p.Border; j < p.Height-p.Border; j++ {

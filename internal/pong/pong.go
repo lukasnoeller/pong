@@ -49,7 +49,7 @@ func (p *Pong) Init() tea.Cmd {
 	p.Border = 3
 	p.PaddleCoordinates[1] = p.Height - p.Border - 2
 	p.PaddleHeight = 2
-	p.PaddleWidth = 9
+	p.PaddleWidth = int(0.1 * float64(p.Width-2*p.Border))
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
 		row := make([]string, p.Width)
@@ -75,12 +75,34 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case GravityTick:
 		p.BallCoordinates[1] += p.BallVely
 		p.BallCoordinates[0] += p.BallVelx
+		if p.PaddleVel > 0 {
+			p.PaddleVel--
+		}
+		if p.PaddleVel < 0 {
+			p.PaddleVel++
+		}
 		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < p.Border && p.BallVely < 0 {
 			p.BallVely = -p.BallVely
+			p.BallVelx = p.PaddleVel
 			p.BallCoordinates[1] += p.BallVely
+			p.BallCoordinates[0] += p.BallVelx
 		}
 		if p.BallCoordinates[1] > p.Height-p.Border {
-			p.BallCoordinates[1] = 0
+			p.BallCoordinates[1] = p.Border
+			p.BallCoordinates[0] = (p.Width - 2*p.Border) / 2
+			p.BallVely = 1
+			p.BallVelx = 0
+		}
+		if p.BallCoordinates[0] > p.Width-p.Border {
+			p.BallCoordinates[0] = p.Width - p.Border
+			p.BallVely = -p.BallVely
+			p.BallVelx = -p.BallVelx
+		}
+		if p.BallCoordinates[0] < p.Border {
+			p.BallCoordinates[0] = p.Border
+			p.BallVely = -p.BallVely
+			p.BallVelx = -p.BallVelx
+
 		}
 
 		return p, Tick
@@ -88,15 +110,15 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		//cmd = audio.PlayAudio()
 		switch msg.String() {
 		case "left", "h":
-			p.PaddleCoordinates[0]--
 			p.PaddleVel--
+			p.PaddleCoordinates[0] += p.PaddleVel
 			if p.PaddleCoordinates[0] < 0 {
 				p.PaddleCoordinates[0] = 0
 			}
 			return p, nil
 		case "right", "l":
-			p.PaddleCoordinates[0]++
 			p.PaddleVel++
+			p.PaddleCoordinates[0] += p.PaddleVel
 			if p.PaddleCoordinates[0]+p.PaddleWidth > p.Width {
 				p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
 			}
@@ -139,6 +161,6 @@ func (p *Pong) View() string {
 type GravityTick struct{}
 
 func Tick() tea.Msg {
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 90)
 	return GravityTick{}
 }
