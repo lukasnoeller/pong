@@ -16,12 +16,14 @@ type Pong struct {
 	BallCoordinates   [2]int
 	BallVelx          int
 	BallVely          int
+	BallAcc           int
 	PaddleCoordinates [2]int
 	State             state
 	PaddleWidth       int
 	PaddleHeight      int
 	PaddleVel         int
 	PaddleAcc         int
+	MaxSpeed          int
 	Friction          int
 	GameStart         bool
 	DisplayInfo       bool
@@ -44,9 +46,10 @@ func (p *Pong) Init() tea.Cmd {
 	p.Border = 3
 	p.PaddleCoordinates[1] = p.Height - p.Border - 2
 	p.PaddleHeight = 2
-	p.PaddleWidth = int(0.1 * float64(p.Width-2*p.Border))
+	p.PaddleWidth = int(0.15 * float64(p.Width-2*p.Border))
 	p.PaddleAcc = 5
 	p.Friction = 1
+	p.MaxSpeed = 10
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
 		row := make([]string, p.Width)
@@ -78,13 +81,13 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if p.PaddleVel < 0 {
 			p.PaddleVel += p.Friction
 		}
+		if p.PaddleVel > p.MaxSpeed {
+			p.PaddleVel = p.MaxSpeed
+		}
+		if p.PaddleVel < -p.MaxSpeed {
+			p.PaddleVel = -p.MaxSpeed
+		}
 		p.PaddleCoordinates[0] += p.PaddleVel
-		if p.PaddleCoordinates[0] < 0 {
-			p.PaddleCoordinates[0] = 0
-		}
-		if p.PaddleCoordinates[0]+p.PaddleWidth >= p.Width {
-			p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
-		}
 		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < p.Border && p.BallVely < 0 {
 			p.BallVely = -p.BallVely
 			p.BallVelx = p.PaddleVel
@@ -114,18 +117,15 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		//cmd = audio.PlayAudio()
 		switch msg.String() {
 		case "left", "h":
-			p.PaddleVel -= p.PaddleAcc
-			p.PaddleCoordinates[0] += p.PaddleVel
-			if p.PaddleCoordinates[0] < 0 {
-				p.PaddleCoordinates[0] = 0
+			if p.PaddleCoordinates[0] > 0 && p.PaddleCoordinates[0] < p.Width-p.Border {
+
+				p.PaddleVel -= p.PaddleAcc
+				p.PaddleCoordinates[0] += p.PaddleVel
 			}
 			return p, nil
 		case "right", "l":
 			p.PaddleVel += p.PaddleAcc
 			p.PaddleCoordinates[0] += p.PaddleVel
-			if p.PaddleCoordinates[0]+p.PaddleWidth >= p.Width {
-				p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
-			}
 			return p, nil
 
 		case "ctrl+c", "q", "esc":
@@ -155,9 +155,11 @@ func (p *Pong) View() string {
 
 	if p.PaddleCoordinates[0] < 0 {
 		p.PaddleCoordinates[0] = 0
+		p.PaddleVel = 0
 	}
 	if p.PaddleCoordinates[0]+p.PaddleWidth >= p.Width {
 		p.PaddleCoordinates[0] = p.Width - p.PaddleWidth
+		p.PaddleVel = 0
 	}
 	p.drawBoard()
 	var output strings.Builder
