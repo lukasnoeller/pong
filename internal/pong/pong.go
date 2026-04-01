@@ -21,10 +21,10 @@ type Pong struct {
 	State             state
 	PaddleWidth       int
 	PaddleHeight      int
-	PaddleVel         int
-	PaddleAcc         int
-	MaxSpeed          int
-	Friction          int
+	PaddleVel         float32
+	PaddleAcc         float32
+	MaxSpeed          float32
+	Friction          float32
 	GameStart         bool
 	DisplayInfo       bool
 	Grid              [][]string
@@ -43,13 +43,13 @@ func (p *Pong) SetWindowDimensions(w int, h int) {
 func (p *Pong) Init() tea.Cmd {
 	p.BallVely = 1
 	p.BallVelx = 0
-	p.Border = 3
+	p.Border = 5
 	p.PaddleCoordinates[1] = p.Height - p.Border - 2
 	p.PaddleHeight = 2
 	p.PaddleWidth = int(0.15 * float64(p.Width-2*p.Border))
-	p.PaddleAcc = 5
-	p.Friction = 1
-	p.MaxSpeed = 10
+	p.PaddleAcc = 5.0
+	p.Friction = 0.9
+	p.MaxSpeed = 8.0
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
 		row := make([]string, p.Width)
@@ -87,11 +87,18 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if p.PaddleVel < -p.MaxSpeed {
 			p.PaddleVel = -p.MaxSpeed
 		}
-		p.PaddleCoordinates[0] += p.PaddleVel
-		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] || p.BallCoordinates[1] < p.Border && p.BallVely < 0 {
+		p.PaddleCoordinates[0] += int(p.PaddleVel)
+		// if collision with paddle
+		if p.BallCoordinates[0] >= p.PaddleCoordinates[0] && p.BallCoordinates[0] <= p.PaddleCoordinates[0]+p.PaddleWidth && p.BallCoordinates[1] > p.PaddleCoordinates[1] {
 			p.BallVely = -p.BallVely
-			p.BallVelx = p.PaddleVel
+			p.BallVelx += int(p.PaddleVel) // Will change later when making ball vel float32
 			p.BallCoordinates[1] += p.BallVely
+			p.BallCoordinates[0] += p.BallVelx
+		}
+		if p.BallCoordinates[1] < p.Border {
+			p.BallVely = -p.BallVely
+			p.BallVelx = -p.BallVelx
+			p.BallCoordinates[1] += p.Border
 			p.BallCoordinates[0] += p.BallVelx
 		}
 		if p.BallCoordinates[1] > p.Height-p.Border {
@@ -120,12 +127,12 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if p.PaddleCoordinates[0] > 0 && p.PaddleCoordinates[0] < p.Width-p.Border {
 
 				p.PaddleVel -= p.PaddleAcc
-				p.PaddleCoordinates[0] += p.PaddleVel
+				p.PaddleCoordinates[0] += int(p.PaddleVel)
 			}
 			return p, nil
 		case "right", "l":
 			p.PaddleVel += p.PaddleAcc
-			p.PaddleCoordinates[0] += p.PaddleVel
+			p.PaddleCoordinates[0] += int(p.PaddleVel)
 			return p, nil
 
 		case "ctrl+c", "q", "esc":
