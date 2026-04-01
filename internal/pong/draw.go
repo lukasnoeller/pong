@@ -69,6 +69,9 @@ func (p *Pong) drawInfo() {
 	if err := p.Write2Row(p.Height-p.Border, "PaddleVel", p.PaddleVel); err != nil {
 		log.Printf("error during Write2Row: %v\n", err.Error())
 	}
+	if err := p.Write2Row(p.Height-p.Border+1, "PaddleCoordinates", p.PaddleCoordinates); err != nil {
+		log.Printf("error during Write2Row: %v\n", err.Error())
+	}
 	for j := 0; j < p.Border; j++ {
 		for i := 0; i < p.Width; i++ {
 			p.Grid[j][i] = "*"
