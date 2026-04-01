@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"pong/internal/screen"
 
@@ -10,6 +11,12 @@ import (
 )
 
 func main() {
+	file, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	log.SetOutput(file)
 	t := screen.InitializeTitleScreen()
 	p := tea.NewProgram(
 		t,
