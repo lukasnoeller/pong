@@ -45,7 +45,7 @@ func (p *Pong) Init() tea.Cmd {
 	p.BallVelx = 0
 	p.Border = 5
 	p.PaddleCoordinates[1] = p.Height - p.Border - 2
-	p.PaddleHeight = 2
+	p.PaddleHeight = 5
 	p.PaddleWidth = int(0.15 * float64(p.Width-2*p.Border))
 	p.PaddleAcc = 5.0
 	p.Friction = 0.9
