@@ -9,8 +9,8 @@ import (
 	"github.com/hajimehoshi/oto/v2"
 )
 
-func run() error {
-	f, err := os.Open("persona.mp3")
+func run(fileName string) error {
+	f, err := os.Open(fileName)
 	if err != nil {
 		return err
 	}
@@ -42,9 +42,9 @@ func run() error {
 	return nil
 }
 
-func PlayAudio() tea.Cmd {
+func PlayAudio(fileName string) tea.Cmd {
 	return func() tea.Msg {
-		err := run()
+		err := run(fileName)
 		return err
 	}
 }

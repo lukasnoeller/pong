@@ -41,7 +41,7 @@ func (s Screen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.Width = msg.Width
 		s.Height = msg.Height
 	case tea.KeyMsg:
-		cmd = audio.PlayAudio()
+		cmd = audio.PlayAudio("persona.mp3")
 		switch msg.Type {
 		case tea.KeyDown:
 			s.cursor = (s.cursor + 1) % len(s.options)
