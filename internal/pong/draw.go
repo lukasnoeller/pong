@@ -97,15 +97,19 @@ func (p *Pong) drawInfo() {
 		log.Printf("error during Write2Row: %v\n", err.Error())
 	}
 	for j := 0; j < p.Border; j++ {
-		for i := 0; i < p.Width; i++ {
-			p.Grid[j][i] = " "
+		for i := p.Border; i < p.Width; i++ {
+			p.Grid[p.Border][i] = "_"
+			p.Grid[p.Height-p.Border][i] = "_"
 			//p.Grid[j+(p.Height-p.Border)][i] = "*"
 		}
 	}
-	for j := p.Border; j < p.Height-p.Border; j++ {
+	for j := p.Border + 1; j < p.Height-p.Border; j++ {
+
+		p.Grid[j][p.Border] = "|"
+		p.Grid[j][(p.Width - p.Border)] = "|"
 		for i := 0; i < p.Border; i++ {
-			p.Grid[j][i] = " "
-			p.Grid[j][i+(p.Width-p.Border)] = " "
+			//	p.Grid[j][i] = " "
+			//	p.Grid[j][i+(p.Width-p.Border)] = " "
 		}
 	}
 	if err := p.Write2RowMiddle(p.Border/2, "Score", 3); err != nil {

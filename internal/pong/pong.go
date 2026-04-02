@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"pong/internal/audio"
 	"pong/internal/resizer"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -44,11 +45,11 @@ func (p *Pong) Init() tea.Cmd {
 	p.BallVely = 1
 	p.BallVelx = 0
 	p.Border = 5
-	p.PaddleCoordinates[1] = p.Height - p.Border - 2
-	p.PaddleHeight = 5
+	p.PaddleHeight = 3
 	p.PaddleWidth = int(0.15 * float64(p.Width-2*p.Border))
+	p.PaddleCoordinates[1] = p.Height - p.Border - p.PaddleHeight
 	p.PaddleAcc = 5.0
-	p.Friction = 0.9
+	p.Friction = 0.95
 	p.MaxSpeed = 8.0
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
@@ -63,7 +64,6 @@ func (p *Pong) Init() tea.Cmd {
 	return Tick
 }
 func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	//var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		p.Width = msg.Width
@@ -73,6 +73,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return p, nil
 	case GravityTick:
+		cmd := Tick
 		p.BallCoordinates[1] += p.BallVely
 		p.BallCoordinates[0] += p.BallVelx
 		if p.PaddleVel > 0 {
@@ -94,12 +95,14 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.BallVelx += int(p.PaddleVel) // Will change later when making ball vel float32
 			p.BallCoordinates[1] += p.BallVely
 			p.BallCoordinates[0] += p.BallVelx
+			cmd = tea.Batch(cmd, audio.PlayAudio("hit.mp3"))
 		}
 		if p.BallCoordinates[1] < p.Border {
-			p.BallVely = -p.BallVely
-			p.BallVelx = -p.BallVelx
 			p.BallCoordinates[1] += p.Border
 			p.BallCoordinates[0] += p.BallVelx
+			if p.BallVely < 0 {
+				p.BallVely = -p.BallVely
+			}
 		}
 		if p.BallCoordinates[1] > p.Height-p.Border {
 			p.BallCoordinates[1] = p.Border
@@ -119,7 +122,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		}
 
-		return p, Tick
+		return p, cmd
 	case tea.KeyMsg:
 		//cmd = audio.PlayAudio()
 		switch msg.String() {
