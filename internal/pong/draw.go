@@ -115,7 +115,10 @@ func (p *Pong) drawInfo() {
 			//	p.Grid[j][i+(p.Width-p.Border)] = " "
 		}
 	}
-	if err := p.Write2RowMiddle(p.Border/2, "Score", 3); err != nil {
+	if err := p.Write2RowMiddle(p.Border/2, "Score", p.Score); err != nil {
+		log.Printf("error during Write2RowMiddle: %v\n", err.Error())
+	}
+	if err := p.Write2RowMiddle(p.Border/2-1, "Lives", p.Lives); err != nil {
 		log.Printf("error during Write2RowMiddle: %v\n", err.Error())
 	}
 }

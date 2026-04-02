@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"pong/internal/audio"
+	"pong/internal/option"
 	"pong/internal/resizer"
+	"pong/internal/screen"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -29,7 +31,16 @@ type Pong struct {
 	GameStart         bool
 	DisplayInfo       bool
 	Grid              [][]string
+	Lives             int
+	Score             int
 }
+
+func InitGameOver() *screen.Screen {
+	tp := &screen.Screen{Title: "Game Over", Cursor: 0, Options: []option.Option{{Name: "One Player", Model: nil}}}
+	tp.Cursor = 0
+	return tp
+}
+
 type state int
 
 var _ resizer.Resizer = (*Pong)(nil)
@@ -51,6 +62,8 @@ func (p *Pong) Init() tea.Cmd {
 	p.PaddleAcc = 5.0
 	p.Friction = 0.95
 	p.MaxSpeed = 8.0
+	p.Lives = 5
+	p.Score = 0
 	grid := make([][]string, p.Height)
 	for j, _ := range grid {
 		row := make([]string, p.Width)
@@ -110,6 +123,10 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.BallCoordinates[0] = (p.Width - 2*p.Border) / 2
 			p.BallVely = 1
 			p.BallVelx = 0
+			p.Lives -= 1
+			if p.Lives < 0 {
+				return InitGameOver(), nil
+			}
 		}
 		if p.BallCoordinates[0] > p.Width-p.Border {
 			p.BallCoordinates[0] = p.Width - p.Border
