@@ -103,6 +103,7 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if p.BallVely < 0 {
 				p.BallVely = -p.BallVely
 			}
+			cmd = tea.Batch(cmd, audio.PlayAudio("hit.mp3"))
 		}
 		if p.BallCoordinates[1] > p.Height-p.Border {
 			p.BallCoordinates[1] = p.Border
@@ -112,13 +113,13 @@ func (p *Pong) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if p.BallCoordinates[0] > p.Width-p.Border {
 			p.BallCoordinates[0] = p.Width - p.Border
-			p.BallVely = -p.BallVely
 			p.BallVelx = -p.BallVelx
+			cmd = tea.Batch(cmd, audio.PlayAudio("hit.mp3"))
 		}
 		if p.BallCoordinates[0] < p.Border {
 			p.BallCoordinates[0] = p.Border
-			p.BallVely = -p.BallVely
 			p.BallVelx = -p.BallVelx
+			cmd = tea.Batch(cmd, audio.PlayAudio("hit.mp3"))
 
 		}
 

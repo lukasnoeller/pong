@@ -90,23 +90,26 @@ func (p *Pong) Write2RowMiddle(r int, info string, value any) error {
 	return nil
 }
 func (p *Pong) drawInfo() {
-	if err := p.Write2Row(p.Height-p.Border, "PaddleVel", p.PaddleVel); err != nil {
+	if err := p.Write2Row(p.Height-p.Border+1, "PaddleVel", p.PaddleVel); err != nil {
 		log.Printf("error during Write2Row: %v\n", err.Error())
 	}
-	if err := p.Write2Row(p.Height-p.Border+1, "PaddleCoordinates", p.PaddleCoordinates); err != nil {
+	if err := p.Write2Row(p.Height-p.Border+2, "PaddleCoordinates", p.PaddleCoordinates); err != nil {
 		log.Printf("error during Write2Row: %v\n", err.Error())
 	}
-	for j := 0; j < p.Border; j++ {
-		for i := p.Border; i < p.Width; i++ {
-			p.Grid[p.Border][i] = "_"
-			p.Grid[p.Height-p.Border][i] = "_"
-			//p.Grid[j+(p.Height-p.Border)][i] = "*"
-		}
+
+	p.Grid[p.Border][p.Border] = "╭"
+	p.Grid[p.Height-p.Border][p.Border] = "╰"
+	p.Grid[p.Border][p.Width-p.Border] = "╮"
+	p.Grid[p.Height-p.Border][p.Width-p.Border] = "╯"
+
+	for i := p.Border + 1; i < p.Width-p.Border; i++ {
+		p.Grid[p.Border][i] = "-"
+		p.Grid[p.Height-p.Border][i] = "-"
 	}
 	for j := p.Border + 1; j < p.Height-p.Border; j++ {
 
-		p.Grid[j][p.Border] = "|"
-		p.Grid[j][(p.Width - p.Border)] = "|"
+		p.Grid[j][p.Border] = "╎"
+		p.Grid[j][(p.Width - p.Border)] = "╎"
 		for i := 0; i < p.Border; i++ {
 			//	p.Grid[j][i] = " "
 			//	p.Grid[j][i+(p.Width-p.Border)] = " "
